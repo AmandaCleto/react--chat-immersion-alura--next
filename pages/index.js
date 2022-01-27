@@ -104,7 +104,6 @@ export default function HomePage() {
                         <TextField
                             value={userName}
                             onChange={function (e) {
-                                console.log(invalidUserName);
                                 if (e.target.value.length <= 2) {
                                     setInvalidUsername(true);
                                 } else {
