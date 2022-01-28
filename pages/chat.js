@@ -1,23 +1,46 @@
 import { Box, Text, TextField, Image, Button } from "@skynexui/components";
 import React from "react";
 import appConfig from "../config.json";
+import { createClient } from "@supabase/supabase-js";
 
-
-//desafio
+//desafios
 //botao excluir mensagem ao lado de cada mensagem
 //botao de enviar no input, msm efeito de enter
+//loading enquanto o useeffect nao termine
+//dados opacos antes de carregar
+//mouse over na imagem da pessoa para ver o profile da pessoa
+//mandar emojis, imagem, anexo etc
+
+const SUPA_BASE_URL = process.env.NEXT_PUBLIC_SUPA_BASE_URL;
+const SUPA_BASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPA_BASE_ANON_KEY;
+
+const supaBaseClient = createClient(SUPA_BASE_URL, SUPA_BASE_ANON_KEY);
 
 export default function ChatPage() {
     const [message, setMessage] = React.useState("");
     const [listMessages, setListMessages] = React.useState([]);
 
+    React.useEffect(() => {
+        supaBaseClient
+            .from('messages')
+            .select('*')
+            .order('id', { ascending: false })
+            .then(({data}) => setListMessages(data));
+    }, []);
+
     function handleNewMessage(newMessage) {
         const message = {
-            text: newMessage,
-            from: "caio",
-            id: listMessages.length + 1,
+            message: newMessage,
+            from: "caioliveira277",
         };
-        setListMessages([message, ...listMessages]);
+
+        supaBaseClient
+            .from('messages')
+            .insert([message])
+            .then(({data}) => {
+                setListMessages([data[0], ...listMessages]);
+        });
+
         setMessage("");
     }
 
@@ -126,25 +149,23 @@ function Header() {
 }
 
 function MessageList(props) {
-    const userName = "caioliveira277";
-
     return (
         <Box
-            tag="ul"
-            styleSheet={{
-                overflow: "scroll",
-                overflowX: "hidden",
-                display: "flex",
-                flexDirection: "column-reverse",
-                flex: 1,
-                color: appConfig.theme.colors.neutrals["000"],
-                marginBottom: "16px",
-            }}
+        tag="ul"
+        styleSheet={{
+            overflow: "scroll",
+            overflowX: "hidden",
+            display: "flex",
+            flexDirection: "column-reverse",
+            flex: 1,
+            color: appConfig.theme.colors.neutrals["000"],
+            marginBottom: "16px",
+        }}
         >
-            {props.messages.map((message) => {
+            {props.messages.map((data) => {
                 return (
                     <Text
-                        key={message.id}
+                        key={data.id}
                         tag="li"
                         styleSheet={{
                             borderRadius: "5px",
@@ -169,9 +190,9 @@ function MessageList(props) {
                                     display: "inline-block",
                                     marginRight: "8px",
                                 }}
-                                src={`https://github.com/${userName}.png`}
+                                src={`https://github.com/${data.from}.png`}
                             />
-                            <Text tag="strong">{message.from}</Text>
+                            <Text tag="strong">{data.from}</Text>
                             <Text
                                 styleSheet={{
                                     fontSize: "10px",
@@ -183,7 +204,7 @@ function MessageList(props) {
                                 {new Date().toLocaleDateString()}
                             </Text>
                         </Box>
-                        {message.text}
+                        {data.message}
                     </Text>
                 );
             })}
