@@ -1,7 +1,9 @@
 import { Box, Text, TextField, Image, Button } from "@skynexui/components";
 import React from "react";
 import appConfig from "../config.json";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import { useRouter } from "next/router";
+import { ButtonSendSticker } from "./src/components/buttonSendSticker";
 
 //desafios
 //botao excluir mensagem ao lado de cada mensagem
@@ -19,27 +21,43 @@ const supaBaseClient = createClient(SUPA_BASE_URL, SUPA_BASE_ANON_KEY);
 export default function ChatPage() {
     const [message, setMessage] = React.useState("");
     const [listMessages, setListMessages] = React.useState([]);
+    const route = useRouter();
+    const userLogged = route.query.username;
+
+    function listenMessagesInRealTime(addMessage) {
+        return supaBaseClient
+            .from("messages")
+            .on("INSERT", ({ new: newMessage }) => {
+                addMessage(newMessage);
+            })
+            .subscribe();
+    }
 
     React.useEffect(() => {
         supaBaseClient
-            .from('messages')
-            .select('*')
-            .order('id', { ascending: false })
-            .then(({data}) => setListMessages(data));
+            .from("messages")
+            .select("*")
+            .order("id", { ascending: false })
+            .then(({ data }) => {
+                setListMessages(data);
+            });
+        listenMessagesInRealTime((newMessage) => {
+            setListMessages((currentValue) => {
+              return  [newMessage, ...currentValue];
+            });
+        });
     }, []);
 
     function handleNewMessage(newMessage) {
         const message = {
             message: newMessage,
-            from: "caioliveira277",
+            from: userLogged,
         };
 
         supaBaseClient
-            .from('messages')
+            .from("messages")
             .insert([message])
-            .then(({data}) => {
-                setListMessages([data[0], ...listMessages]);
-        });
+            .then(({ data }) => {});
 
         setMessage("");
     }
@@ -117,6 +135,11 @@ export default function ChatPage() {
                                 color: appConfig.theme.colors.neutrals[200],
                             }}
                         />
+                        <ButtonSendSticker
+                            onStickerClick={(sticker) => {
+                                handleNewMessage(`:sticker:${sticker}`);
+                            }}
+                        />
                     </Box>
                 </Box>
             </Box>
@@ -151,16 +174,16 @@ function Header() {
 function MessageList(props) {
     return (
         <Box
-        tag="ul"
-        styleSheet={{
-            overflow: "scroll",
-            overflowX: "hidden",
-            display: "flex",
-            flexDirection: "column-reverse",
-            flex: 1,
-            color: appConfig.theme.colors.neutrals["000"],
-            marginBottom: "16px",
-        }}
+            tag="ul"
+            styleSheet={{
+                overflow: "scroll",
+                overflowX: "hidden",
+                display: "flex",
+                flexDirection: "column-reverse",
+                flex: 1,
+                color: appConfig.theme.colors.neutrals["000"],
+                marginBottom: "16px",
+            }}
         >
             {props.messages.map((data) => {
                 return (
@@ -204,7 +227,13 @@ function MessageList(props) {
                                 {new Date().toLocaleDateString()}
                             </Text>
                         </Box>
-                        {data.message}
+                        {data.message.startsWith(":sticker:") ? (
+                            <Image
+                                src={data.message.replace(":sticker:", "")}
+                            />
+                        ) : (
+                            data.message
+                        )}
                     </Text>
                 );
             })}

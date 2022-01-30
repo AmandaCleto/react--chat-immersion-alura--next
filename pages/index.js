@@ -77,7 +77,7 @@ export default function HomePage() {
                         as="form"
                         onSubmit={function (e) {
                             e.preventDefault();
-                            route.push("/chat");
+                            route.push(`/chat?username=${userName}`);
                             console.log("oi");
                         }}
                         styleSheet={{
