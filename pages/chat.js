@@ -43,7 +43,7 @@ export default function ChatPage() {
             });
         listenMessagesInRealTime((newMessage) => {
             setListMessages((currentValue) => {
-              return  [newMessage, ...currentValue];
+                return [newMessage, ...currentValue];
             });
         });
     }, []);
@@ -185,7 +185,7 @@ function MessageList(props) {
                 marginBottom: "16px",
             }}
         >
-            {props.messages.map((data) => {
+            {(props.messages || []).map((data) => {
                 return (
                     <Text
                         key={data.id}
