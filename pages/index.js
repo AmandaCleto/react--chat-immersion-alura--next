@@ -1,5 +1,5 @@
 import { Box, Button, Text, TextField, Image } from "@skynexui/components";
-import React, { useState } from "react";
+import React from "react";
 import appConfig from "../config.json";
 import { useRouter } from "next/router";
 
@@ -18,21 +18,6 @@ function Title(props) {
         </>
     );
 }
-
-// Componente React
-// function HomePage() {
-//     // JSX
-//     return (
-//         <div>
-//             <GlobalStyle />
-//             <Title tag="h2">Boas vindas de volta!</Title>
-//             <h2>Discord - Alura Matrix</h2>
-//         </div>
-//     )
-// }
-// export default HomePage
-
-// api.github.com/users/nome
 
 export default function HomePage() {
     const [userName, setUserName] = React.useState("caioliveira277");
@@ -72,13 +57,12 @@ export default function HomePage() {
                         backgroundColor: appConfig.theme.colors.neutrals[700],
                     }}
                 >
-                    {/* Formulário */}
+                    {/* Form */}
                     <Box
                         as="form"
                         onSubmit={function (e) {
                             e.preventDefault();
                             route.push(`/chat?username=${userName}`);
-                            console.log("oi");
                         }}
                         styleSheet={{
                             display: "flex",
@@ -141,7 +125,7 @@ export default function HomePage() {
                             }}
                         />
                     </Box>
-                    {/* Formulário */}
+                    {/* Form */}
 
                     {/* Photo Area */}
                     <Box

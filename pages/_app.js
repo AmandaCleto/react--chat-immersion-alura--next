@@ -25,6 +25,13 @@ function GlobalStyle() {
                 flex: 1;
             }
             /* ./App fit Height */
+
+            @keyframes blink { 50% { border-color: #7BC47F; }  }
+            .alerts-border {
+                border: 1.5px solid;
+                animation: blink 2s;
+                animation-iteration-count: infinite;
+            }
         `}</style>
     );
 }

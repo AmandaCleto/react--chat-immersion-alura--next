@@ -1,7 +1,7 @@
 import { Box, Text, TextField, Image, Button } from "@skynexui/components";
 import React from "react";
 import appConfig from "../config.json";
-import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@supabase/supabase-js";
 import { useRouter } from "next/router";
 import { ButtonSendSticker } from "./src/components/buttonSendSticker";
 
@@ -39,6 +39,7 @@ export default function ChatPage() {
             .select("*")
             .order("id", { ascending: false })
             .then(({ data }) => {
+                console.log(data)
                 setListMessages(data);
             });
         listenMessagesInRealTime((newMessage) => {
@@ -57,7 +58,7 @@ export default function ChatPage() {
         supaBaseClient
             .from("messages")
             .insert([message])
-            .then(({ data }) => {});
+            .then(() => {});
 
         setMessage("");
     }
@@ -172,6 +173,14 @@ function Header() {
 }
 
 function MessageList(props) {
+    async function fetchData(infoApi) {
+        const response = await fetch(infoApi);
+
+        return response.json();
+    }
+    const [isImageHover, setIsImageHover] = React.useState(false);
+    const [userBio, setUserBio] = React.useState("");
+    const [userUrl, setUserUrl] = React.useState("");
     return (
         <Box
             tag="ul"
@@ -186,11 +195,16 @@ function MessageList(props) {
             }}
         >
             {(props.messages || []).map((data) => {
+                const infoApi = `https://api.github.com/users/${data.from}`;
+
                 return (
                     <Text
                         key={data.id}
                         tag="li"
                         styleSheet={{
+                            display: "flex",
+                            flexDirection: "row",
+                            justifyContent: "space-between",
                             borderRadius: "5px",
                             padding: "6px",
                             marginBottom: "12px",
@@ -200,40 +214,167 @@ function MessageList(props) {
                             },
                         }}
                     >
-                        <Box
+                        <Box>
+                            <Box
+                                styleSheet={{
+                                    marginBottom: isImageHover ? "12px" : "8px",
+                                }}
+                            >
+                                <Box
+                                    styleSheet={{
+                                        display: "flex",
+                                        flexDirection: "row",
+                                    }}
+                                >
+                                    <Image
+                                        onClick={async () => {
+                                            if (!isImageHover) {
+                                                const data = await fetchData(
+                                                    infoApi
+                                                );
+
+                                                setUserBio(data.bio),
+                                                    setUserUrl(data.html_url),
+                                                    setIsImageHover(true);
+                                            } else {
+                                                setIsImageHover(false);
+                                            }
+                                        }}
+                                        styleSheet={{
+                                            width: isImageHover
+                                                ? "60px"
+                                                : "30px",
+                                            height: isImageHover
+                                                ? "60px"
+                                                : "30px",
+                                            borderRadius: "50%",
+                                            display: "inline-block",
+                                            marginRight: "8px",
+                                            transitionProperty: [
+                                                "width",
+                                                "height",
+                                            ],
+                                            cursor: "pointer",
+                                            transitionDuration: "0.350s",
+                                            transitionTimingFunction: "linear",
+                                        }}
+                                        src={`https://github.com/${data.from}.png`}
+                                        className="alerts-border"
+                                    />
+                                    <Box
+                                        styleSheet={{
+                                            display: "flex",
+                                            flexDirection: "column",
+                                            justifyContent: "start",
+                                            alignItems: "start",
+                                        }}
+                                    >
+                                        <Box
+                                            styleSheet={{
+                                                display: "flex",
+                                                flexDirection: "row",
+                                                justifyContent: "center",
+                                                alignItems: "center",
+                                                marginBottom: "5px",
+                                                marginLeft: "7px",
+                                            }}
+                                        >
+                                            <Text tag="strong">
+                                                {data.from}
+                                            </Text>
+                                            <Text
+                                                styleSheet={{
+                                                    fontSize: "10px",
+                                                    marginLeft: "8px",
+                                                    color: appConfig.theme
+                                                        .colors.neutrals[300],
+                                                }}
+                                                tag="span"
+                                            >
+                                                {new Date().toLocaleString(
+                                                    "pt-br"
+                                                )}
+                                            </Text>
+                                        </Box>
+
+                                        {isImageHover ? (
+                                            <>
+                                                <Text
+                                                    tag="p"
+                                                    styleSheet={{
+                                                        fontSize: "10px",
+                                                        marginLeft: "8px",
+                                                        marginBottom: "3px",
+                                                        color: appConfig.theme
+                                                            .colors
+                                                            .neutrals[300],
+
+                                                        transitionProperty:
+                                                            "opacity",
+                                                        transitionDuration:
+                                                            "0.400s",
+                                                        transitionTimingFunction:
+                                                            "linear",
+                                                    }}
+                                                >
+                                                    {userBio}
+                                                </Text>
+                                                <Text
+                                                    tag="a"
+                                                    styleSheet={{
+                                                        fontSize: "10px",
+                                                        marginLeft: "8px",
+                                                        textDecoration:
+                                                            "underline",
+                                                        color: appConfig.theme
+                                                            .colors
+                                                            .neutrals[200],
+                                                        transitionProperty:
+                                                            "opacity",
+                                                        transitionDuration:
+                                                            "0.400s",
+                                                        transitionTimingFunction:
+                                                            "linear",
+                                                    }}
+                                                    target="_blank"
+                                                    href={userUrl}
+                                                >
+                                                    {userUrl}
+                                                </Text>
+                                            </>
+                                        ) : (
+                                            <></>
+                                        )}
+                                    </Box>
+                                </Box>
+                            </Box>
+                            {data.message.startsWith(":sticker:") ? (
+                                <Image
+                                    src={data.message.replace(":sticker:", "")}
+                                    styleSheet={{
+                                        width: "120px",
+                                        height: "120px",
+                                        borderRadius: "10%",
+                                        display: "inline-block",
+                                        marginRight: "8px",
+                                    }}
+                                />
+                            ) : (
+                                data.message
+                            )}
+                        </Box>
+                        <Text
+                            onClick={() => {
+                                console.log("uu");
+                            }}
                             styleSheet={{
-                                marginBottom: "8px",
+                                fontSize: "12px",
+                                marginRight: "10px",
+                                cursor: "pointer",
                             }}
                         >
-                            <Image
-                                styleSheet={{
-                                    width: "20px",
-                                    height: "20px",
-                                    borderRadius: "50%",
-                                    display: "inline-block",
-                                    marginRight: "8px",
-                                }}
-                                src={`https://github.com/${data.from}.png`}
-                            />
-                            <Text tag="strong">{data.from}</Text>
-                            <Text
-                                styleSheet={{
-                                    fontSize: "10px",
-                                    marginLeft: "8px",
-                                    color: appConfig.theme.colors.neutrals[300],
-                                }}
-                                tag="span"
-                            >
-                                {new Date().toLocaleDateString()}
-                            </Text>
-                        </Box>
-                        {data.message.startsWith(":sticker:") ? (
-                            <Image
-                                src={data.message.replace(":sticker:", "")}
-                            />
-                        ) : (
-                            data.message
-                        )}
+                            ❌
+                        </Text>
                     </Text>
                 );
             })}
