@@ -45,7 +45,7 @@ Os scripts abaixo executam a compilação do projeto.
 
 
 ---
-## Links: 🌐
+## 🌐 Links: 
 ***Alura:***<br>
 [<ins>Plataforma da Alura</ins>](https://www.alura.com.br/)
 
