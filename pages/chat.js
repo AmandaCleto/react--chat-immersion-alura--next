@@ -3,7 +3,7 @@ import React from "react";
 import appConfig from "../config.json";
 import { createClient } from "@supabase/supabase-js";
 import { useRouter } from "next/router";
-import { ButtonSendSticker } from "./src/components/buttonSendSticker";
+import { ButtonSendSticker } from "../src/components/buttonSendSticker";
 
 //desafios
 //botao excluir mensagem ao lado de cada mensagem
