@@ -1,18 +1,17 @@
-import { Box, Text, TextField, Image, Button } from "@skynexui/components";
+import { Box, TextField, Image } from "@skynexui/components";
 import React from "react";
 import appConfig from "../config.json";
 import { createClient } from "@supabase/supabase-js";
 import { useRouter } from "next/router";
 import { ButtonSendSticker } from "./components/buttonSendSticker";
-import { Header } from './components/header';
-import { MessageList } from './components/messageList';
+import { Header } from "./components/header";
+import { MessageList } from "./components/messageList";
 
 //desafios
 //botao excluir mensagem ao lado de cada mensagem
 //botao de enviar no input, msm efeito de enter
 //loading enquanto o useeffect nao termine
 //dados opacos antes de carregar
-//mouse over na imagem da pessoa para ver o profile da pessoa
 //mandar emojis, imagem, anexo etc
 
 const SUPA_BASE_URL = process.env.NEXT_PUBLIC_SUPA_BASE_URL;
@@ -25,6 +24,7 @@ export default function ChatPage() {
     const [listMessages, setListMessages] = React.useState([]);
     const route = useRouter();
     const userLogged = route.query.username;
+    const [isLoading, setIsLoading] = React.useState(true);
 
     function listenMessagesInRealTime(addMessage) {
         return supaBaseClient
@@ -43,11 +43,15 @@ export default function ChatPage() {
             .then(({ data }) => {
                 setListMessages(data);
             });
+
         listenMessagesInRealTime((newMessage) => {
             setListMessages((currentValue) => {
                 return [newMessage, ...currentValue];
             });
+
         });
+
+        setIsLoading(false);
     }, []);
 
     function handleNewMessage(newMessage) {
@@ -105,7 +109,29 @@ export default function ChatPage() {
                         padding: "16px",
                     }}
                 >
-                    <MessageList messages={listMessages} />
+                    {isLoading ? (
+                        <Box
+                            styleSheet={{
+                                width: "100%",
+                                height: "100%",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                            }}
+                        >
+                            <Image
+                                src={`https://amandacleto.github.io/images-for-projects/public/images/react-chat-alura-next/icon-spinner-gray.png`}
+                                className="rotate"
+                                styleSheet={{
+                                    width: "50x",
+                                    height: "50x",
+                                }}
+                            />
+                        </Box>
+                    ) : (
+                        <MessageList messages={listMessages} />
+
+                        )}
 
                     <Box
                         as="form"
