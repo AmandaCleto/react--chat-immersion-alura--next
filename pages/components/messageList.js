@@ -1,10 +1,17 @@
 import { Box, Text, Image } from "@skynexui/components";
 import React from "react";
+import { useEffect } from "react/cjs/react.development";
 import appConfig from "../../config.json";
+import { supaBaseClient } from "../../config";
 
 export function MessageList(props) {
     const [isImageClicked, setIsImageClicked] = React.useState({});
     const [userInfo, setUserInfo] = React.useState({});
+    const [messages, setMessages] = React.useState(props.messages);
+
+    useEffect(() => {
+        setMessages(props.messages);
+    }, [props.messages]);
 
     async function onImageClick(username, messageId) {
         if (!isImageClicked[messageId]) {
@@ -45,6 +52,24 @@ export function MessageList(props) {
         return response.json();
     }
 
+    function deleteMessage(id) {
+        const messagesFiltered = messages.filter((message) => {
+            if (message.id == id) {
+                return false;
+            }
+
+            return true;
+        });
+
+        supaBaseClient
+            .from("messages")
+            .delete()
+            .match({ id: id })
+            .then(() => {});
+
+        setMessages(messagesFiltered);
+    }
+
     return (
         <Box
             tag="ul"
@@ -58,7 +83,7 @@ export function MessageList(props) {
                 marginBottom: "16px",
             }}
         >
-            {(props.messages || []).map((data) => {
+            {(messages || []).map((data) => {
                 return (
                     <Text
                         key={data.id}
@@ -91,7 +116,9 @@ export function MessageList(props) {
                                     }}
                                 >
                                     <Image
-                                        onClick={() => onImageClick(data.from, data.id)}
+                                        onClick={() =>
+                                            onImageClick(data.from, data.id)
+                                        }
                                         styleSheet={{
                                             width: isImageClicked[data.id]
                                                 ? "60px"
@@ -169,7 +196,8 @@ export function MessageList(props) {
                                                             "linear",
                                                     }}
                                                 >
-                                                    {userInfo[data.from]?.bio ?? ''}
+                                                    {userInfo[data.from]?.bio ??
+                                                        ""}
                                                 </Text>
                                                 <Text
                                                     tag="a"
@@ -189,9 +217,13 @@ export function MessageList(props) {
                                                             "linear",
                                                     }}
                                                     target="_blank"
-                                                    href={userInfo[data.from]?.html_url ?? ''}
+                                                    href={
+                                                        userInfo[data.from]
+                                                            ?.html_url ?? ""
+                                                    }
                                                 >
-                                                    {userInfo[data.from]?.html_url ?? ''}
+                                                    {userInfo[data.from]
+                                                        ?.html_url ?? ""}
                                                 </Text>
                                             </>
                                         ) : (
@@ -216,8 +248,8 @@ export function MessageList(props) {
                             )}
                         </Box>
                         <Text
-                            onClick={() => {
-                                console.log("uu");
+                            onClick={(_) => {
+                                deleteMessage(data.id);
                             }}
                             styleSheet={{
                                 fontSize: "12px",

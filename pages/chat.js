@@ -1,23 +1,11 @@
 import { Box, TextField, Image } from "@skynexui/components";
 import React from "react";
 import appConfig from "../config.json";
-import { createClient } from "@supabase/supabase-js";
 import { useRouter } from "next/router";
 import { ButtonSendSticker } from "./components/buttonSendSticker";
 import { Header } from "./components/header";
 import { MessageList } from "./components/messageList";
-
-//desafios
-//botao excluir mensagem ao lado de cada mensagem
-//botao de enviar no input, msm efeito de enter
-//loading enquanto o useeffect nao termine
-//dados opacos antes de carregar
-//mandar emojis, imagem, anexo etc
-
-const SUPA_BASE_URL = process.env.NEXT_PUBLIC_SUPA_BASE_URL;
-const SUPA_BASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPA_BASE_ANON_KEY;
-
-const supaBaseClient = createClient(SUPA_BASE_URL, SUPA_BASE_ANON_KEY);
+import { supaBaseClient } from "../config";
 
 export default function ChatPage() {
     const [message, setMessage] = React.useState("");
@@ -48,7 +36,6 @@ export default function ChatPage() {
             setListMessages((currentValue) => {
                 return [newMessage, ...currentValue];
             });
-
         });
 
         setIsLoading(false);
@@ -130,8 +117,7 @@ export default function ChatPage() {
                         </Box>
                     ) : (
                         <MessageList messages={listMessages} />
-
-                        )}
+                    )}
 
                     <Box
                         as="form"
